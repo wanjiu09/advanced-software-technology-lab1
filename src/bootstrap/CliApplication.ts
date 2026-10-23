@@ -1,3 +1,9 @@
+import { RedoCliCommand } from '../cli/RedoCliCommand.js';
+import { UndoCliCommand } from '../cli/UndoCliCommand.js';
+import { DeleteCliCommand } from '../cli/DeleteCliCommand.js';
+import { SetCliCommand } from '../cli/SetCliCommand.js';
+import { ScaleCliCommand } from '../cli/ScaleCliCommand.js';
+import { MoveCliCommand } from '../cli/MoveCliCommand.js';
 import { ShowCliCommand } from '../cli/ShowCliCommand.js';
 import { TreeCliCommand } from '../cli/TreeCliCommand.js';
 import { CreateCliCommand } from '../cli/CreateCliCommand.js';
@@ -25,6 +31,12 @@ export class CliApplication {
     registry.register(new CreateCliCommand(session));
     registry.register(new TreeCliCommand(session));
     registry.register(new ShowCliCommand(session));
+    registry.register(new MoveCliCommand(session));
+    registry.register(new ScaleCliCommand(session));
+    registry.register(new SetCliCommand(session));
+    registry.register(new DeleteCliCommand(session));
+    registry.register(new UndoCliCommand(session));
+    registry.register(new RedoCliCommand(session));
     this.registerPendingCommands(registry);
     registry.register(new HelpCommand(registry));
     return new Repl(
@@ -38,16 +50,10 @@ export class CliApplication {
   private registerPendingCommands(registry: CommandRegistry): void {
     registry.register(new PendingCommand('read', ['read <file.svg>'], '读入 SVG，缺失 id 时补全并警告。'));
     registry.register(new PendingCommand('save', ['save [file.svg]'], '保存 SVG；省略路径时使用当前文件路径。'));
-    registry.register(new PendingCommand('delete', ['delete <id>'], '删除图形及其全部子孙。'));
-    registry.register(new PendingCommand('move', ['move <id> <dx> <dy>'], '增量平移图形或整组。'));
-    registry.register(new PendingCommand('scale', ['scale <id> <factor>'], '等比缩放位置和尺寸，factor 必须为正。'));
-    registry.register(new PendingCommand('set', ['set <id> <attr> <value>'], '修改白名单中的属性或 text 内容。'));
     registry.register(new PendingCommand('group', ['group <newGid> <id1> <id2>…'], '将已有图形收入新容器，保持相对顺序。'));
     registry.register(new PendingCommand('ungroup', ['ungroup <gid>'], '解散非根级容器，子节点提升到原位置。'));
     registry.register(new PendingCommand('addto', ['addto <gid> <id>'], '将已有图形移入容器末尾。'));
     registry.register(new PendingCommand('front', ['front <id>'], '移到同级最前景。'));
     registry.register(new PendingCommand('back', ['back <id>'], '移到同级最后景。'));
-    registry.register(new PendingCommand('undo', ['undo'], '撤销上一次编辑；文档操作之后禁止。'));
-    registry.register(new PendingCommand('redo', ['redo'], '重做已撤销的编辑；新编辑清空重做历史。'));
   }
 }

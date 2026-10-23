@@ -41,9 +41,9 @@ test('multiple failed commands are followed by a successful help, including a fi
   assert.match(result.stdout, /error: unterminated double quote/);
   assert.match(result.stdout, /error: unknown command: warp/);
   assert.match(result.stdout, /error: usage: help/);
-  assert.match(result.stdout, /error: command not implemented yet: move/);
+  assert.match(result.stdout, /error: no document\. use 'init' or 'read' first/);
   assert.equal(result.stdout.match(/error:/g)?.length, 4);
-  assert.match(result.stdout, /Commands \(available: init, canvas, create, tree, show, help\):/);
+  assert.match(result.stdout, /Commands \(available: init, canvas, create, move, scale, set, delete, undo, redo, tree, show, help\):/);
   assert.equal(result.stdout.includes('created'), false);
 });
 

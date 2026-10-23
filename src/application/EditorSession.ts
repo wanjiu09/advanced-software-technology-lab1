@@ -1,3 +1,9 @@
+import { DeleteCommand } from './commands/DeleteCommand.js';
+import { SetCommand } from './commands/SetCommand.js';
+import { ScaleCommand } from './commands/ScaleCommand.js';
+import { MoveCommand } from './commands/MoveCommand.js';
+import { HistoryManager } from './HistoryManager.js';
+import type { Command } from './commands/Command.js';
 import { Geometry } from '../domain/Geometry.js';
 import type { Shape } from '../domain/Shape.js';
 import { ShapeFactory } from '../domain/ShapeFactory.js';
@@ -6,6 +12,7 @@ import { CreateCommand } from './commands/CreateCommand.js';
 import type { ShapeView } from './ShapeView.js';
 
 export class EditorSession {
+  private readonly history = new HistoryManager();
   private document: SvgDocument | undefined;
 
   public constructor(private readonly factory = new ShapeFactory()) {}
@@ -21,12 +28,14 @@ export class EditorSession {
       height === undefined ? 600 : Geometry.parseNumber(height, 'canvas height'),
     );
     this.document = document;
+    this.history.barrier();
   }
 
   public canvas(width?: string, height?: string): Readonly<{ width: number; height: number }> {
     const document = this.requireDocument();
     if (width !== undefined && height !== undefined) {
       document.resize(Geometry.parseNumber(width, 'canvas width'), Geometry.parseNumber(height, 'canvas height'));
+      this.history.barrier();
     } else if (width !== undefined || height !== undefined) {
       throw new Error('usage: canvas [w] [h]');
     }
@@ -40,8 +49,40 @@ export class EditorSession {
 
   public create(type: string, id: string, values: readonly string[], containerId?: string): string {
     const command = this.prepareCreate(type, id, values, containerId);
-    command.execute();
-    return command.summary;
+    return this.executeEdit(command);
+  }
+
+  public executeEdit(command: Command): string {
+    this.requireDocument();
+    return this.history.execute(command);
+  }
+
+  public move(id: string, dx: string, dy: string): string {
+    this.requireDocument();
+    return this.executeEdit(new MoveCommand(this, id, Geometry.parseNumber(dx, 'dx'), Geometry.parseNumber(dy, 'dy')));
+  }
+
+  public scale(id: string, factor: string): string {
+    this.requireDocument();
+    return this.executeEdit(new ScaleCommand(this, id, Geometry.parseNumber(factor, 'scale factor')));
+  }
+
+  public set(id: string, attribute: string, value: string): string {
+    return this.executeEdit(new SetCommand(this, id, attribute, value));
+  }
+
+  public delete(id: string): string {
+    return this.executeEdit(new DeleteCommand(this, id));
+  }
+
+  public undo(): string {
+    this.requireDocument();
+    return this.history.undo();
+  }
+
+  public redo(): string {
+    this.requireDocument();
+    return this.history.redo();
   }
 
   public tree(id?: string): ShapeView {

@@ -5,7 +5,6 @@ import { EditCommand } from './EditCommand.js';
 
 export class CreateCommand extends EditCommand {
   private readonly attributes: Readonly<Record<string, string>>;
-  private result = '';
 
   public constructor(
     session: EditorSession,
@@ -17,10 +16,6 @@ export class CreateCommand extends EditCommand {
   ) {
     super(session);
     this.attributes = Object.freeze({ ...attributes });
-  }
-
-  public get summary(): string {
-    return this.result;
   }
 
   protected override apply(document: SvgDocument): void {

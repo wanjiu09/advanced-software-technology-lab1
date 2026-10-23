@@ -5,6 +5,12 @@ import type { Command } from './Command.js';
 
 /** Transactional Command base: snapshots are owned by the command, not the CLI. */
 export abstract class EditCommand implements Command {
+  protected result = '';
+
+  public get summary(): string {
+    return this.result;
+  }
+
   private before: DocumentMemento | undefined;
   private after: DocumentMemento | undefined;
   private document: SvgDocument | undefined;
