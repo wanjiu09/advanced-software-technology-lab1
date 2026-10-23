@@ -49,11 +49,14 @@ export class SvgDocument extends TreeNode {
       this.appendChild(shape);
       return;
     }
-    const container = this.lookup(containerId);
-    if (container === undefined) {
-      throw new Error(`no such container: ${containerId}`);
-    }
-    container.appendChild(shape);
+    this.findContainer(containerId).appendChild(shape);
+  }
+
+  public findContainer(id: string): Shape {
+    const container = this.lookup(id);
+    if (container === undefined) throw new Error(`no such container: ${id}`);
+    if (!container.isContainer) throw new Error(`not a container: ${id}`);
+    return container;
   }
 
   public find(id: string): Shape {

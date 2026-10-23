@@ -1,3 +1,8 @@
+import { BackCommand } from './commands/BackCommand.js';
+import { FrontCommand } from './commands/FrontCommand.js';
+import { AddToCommand } from './commands/AddToCommand.js';
+import { UngroupCommand } from './commands/UngroupCommand.js';
+import { GroupCommand } from './commands/GroupCommand.js';
 import { DeleteCommand } from './commands/DeleteCommand.js';
 import { SetCommand } from './commands/SetCommand.js';
 import { ScaleCommand } from './commands/ScaleCommand.js';
@@ -73,6 +78,26 @@ export class EditorSession {
 
   public delete(id: string): string {
     return this.executeEdit(new DeleteCommand(this, id));
+  }
+
+  public group(id: string, ids: readonly string[]): string {
+    return this.executeEdit(new GroupCommand(this, this.factory, id, ids));
+  }
+
+  public ungroup(id: string): string {
+    return this.executeEdit(new UngroupCommand(this, id));
+  }
+
+  public addto(containerId: string, id: string): string {
+    return this.executeEdit(new AddToCommand(this, containerId, id));
+  }
+
+  public front(id: string): string {
+    return this.executeEdit(new FrontCommand(this, id));
+  }
+
+  public back(id: string): string {
+    return this.executeEdit(new BackCommand(this, id));
   }
 
   public undo(): string {

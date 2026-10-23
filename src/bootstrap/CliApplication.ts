@@ -1,3 +1,8 @@
+import { BackCliCommand } from '../cli/BackCliCommand.js';
+import { FrontCliCommand } from '../cli/FrontCliCommand.js';
+import { AddToCliCommand } from '../cli/AddToCliCommand.js';
+import { UngroupCliCommand } from '../cli/UngroupCliCommand.js';
+import { GroupCliCommand } from '../cli/GroupCliCommand.js';
 import { RedoCliCommand } from '../cli/RedoCliCommand.js';
 import { UndoCliCommand } from '../cli/UndoCliCommand.js';
 import { DeleteCliCommand } from '../cli/DeleteCliCommand.js';
@@ -37,6 +42,11 @@ export class CliApplication {
     registry.register(new DeleteCliCommand(session));
     registry.register(new UndoCliCommand(session));
     registry.register(new RedoCliCommand(session));
+    registry.register(new GroupCliCommand(session));
+    registry.register(new UngroupCliCommand(session));
+    registry.register(new AddToCliCommand(session));
+    registry.register(new FrontCliCommand(session));
+    registry.register(new BackCliCommand(session));
     this.registerPendingCommands(registry);
     registry.register(new HelpCommand(registry));
     return new Repl(
@@ -50,10 +60,5 @@ export class CliApplication {
   private registerPendingCommands(registry: CommandRegistry): void {
     registry.register(new PendingCommand('read', ['read <file.svg>'], '读入 SVG，缺失 id 时补全并警告。'));
     registry.register(new PendingCommand('save', ['save [file.svg]'], '保存 SVG；省略路径时使用当前文件路径。'));
-    registry.register(new PendingCommand('group', ['group <newGid> <id1> <id2>…'], '将已有图形收入新容器，保持相对顺序。'));
-    registry.register(new PendingCommand('ungroup', ['ungroup <gid>'], '解散非根级容器，子节点提升到原位置。'));
-    registry.register(new PendingCommand('addto', ['addto <gid> <id>'], '将已有图形移入容器末尾。'));
-    registry.register(new PendingCommand('front', ['front <id>'], '移到同级最前景。'));
-    registry.register(new PendingCommand('back', ['back <id>'], '移到同级最后景。'));
   }
 }
