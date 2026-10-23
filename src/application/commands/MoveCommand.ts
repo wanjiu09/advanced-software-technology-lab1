@@ -8,7 +8,13 @@ export class MoveCommand extends EditCommand {
 
   protected override apply(document: SvgDocument): void {
     const shape = document.find(this.id);
+    const before = shape.points[0];
     shape.move(this.dx, this.dy);
-    this.result = `${shape.tagName}#${shape.id} moved by (${this.dx},${this.dy})`;
+    const name = `${shape.tagName}#${shape.id}`;
+    const after = shape.points[0];
+    this.result = after === undefined ? `${name} moved by (${this.dx},${this.dy})`
+      : `${name} moved to (${after[0]},${after[1]})`;
+    this.reversedResult = before === undefined ? `${name} moved back by (${-this.dx},${-this.dy})`
+      : `${name} moved back to (${before[0]},${before[1]})`;
   }
 }

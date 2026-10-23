@@ -11,5 +11,6 @@ export class DeleteCommand extends EditCommand {
     if (parent === null) throw new Error(`shape has no parent: ${this.id}`);
     parent.removeChild(shape);
     this.result = `${shape.tagName}#${shape.id} deleted`;
+    this.reversedResult = `${shape.tagName}#${shape.id} restored into ${parent.id === undefined ? 'svg' : `${parent.tagName}#${parent.id}`}`;
   }
 }

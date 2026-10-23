@@ -9,5 +9,6 @@ export class BackCommand extends EditCommand {
     const shape = document.find(this.id);
     new HierarchyEditor(document).back(this.id);
     this.result = `${shape.tagName}#${shape.id} moved to back`;
+    this.reversedResult = `${shape.tagName}#${shape.id} order restored`;
   }
 }

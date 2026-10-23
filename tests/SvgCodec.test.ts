@@ -59,7 +59,7 @@ test('malformed XML, duplicate IDs and unsupported elements or attributes fail e
     wrap('<rect id="same"/><circle id="same"/>'), wrap('<path id="p" d="M0 0"/>'),
     wrap('<rect style="fill:red"/>'), '<svg width=10 height="20"/>',
     '<?xml version="1.1"?><svg width="10" height="20"/>',
-    '<?xml version="1.0" encoding="ISO-8859-1"?><svg width="10" height="20"/>', wrap('<text font-size="20">word</text>'),
+    '<?xml version="1.0" encoding="ISO-8859-1"?><svg width="10" height="20"/>', wrap('<text font-size="bad">word</text>'),
     wrap('<text><tspan>word</tspan></text>'), wrap('<g>unexpected</g>'), wrap('unexpected'),
     wrap('<rect xmlns="urn:other"/>'), wrap('<g xmlns=""/>'), wrap('<text text="bad">real</text>'),
     '<html/>', '<svg/>', wrap('', 'width="400" height="300" viewBox="0 0 800 600"'),
@@ -75,8 +75,6 @@ test('transforms that cannot preserve appearance are rejected rather than silent
   for (const content of [
     '<rect transform="rotate(30)"/>', '<rect transform="scale(2,3)"/>',
     '<rect transform="scale(0)"/>', '<rect transform="translate(1,,2)"/>',
-    '<text transform="scale(2)">word</text>', '<line stroke="red" transform="scale(2)"/>',
-    '<g stroke="red" transform="scale(2)"><rect/></g>',
   ]) assert.throws(() => codec.decode(wrap(content)), /invalid SVG:/);
 });
 
@@ -84,4 +82,40 @@ test('invalid XML output characters fail before serialization', () => {
   const document = new SvgDocument();
   document.add(new ShapeFactory().create('text', 't', { text: 'bad\u0000text' }));
   assert.throws(() => codec.encode(document), /invalid XML character/);
+});
+
+test('scaled text and strokes retain inherited font size, anchor and stroke width on round-trip', () => {
+  const source = wrap('<g id="g" font-size="20px" text-anchor="middle" stroke="red" stroke-width="3" transform="translate(60,40) scale(2)"><text id="t" x="1" y="2" font-size="150%">开始</text><line id="l" x2="10"/><g id="inner" transform="scale(0.5)" font-size="2em"><text id="u" font-size="inherit">结束</text></g></g>');
+  const document = codec.decode(source).document;
+  assert.equal(document.find('t').attributes['font-size'], '60');
+  assert.equal(document.find('t').attributes.x, '62');
+  assert.equal(document.find('t').attributes.y, '44');
+  assert.equal(document.find('t').attributes['stroke-width'], '6');
+  assert.equal(document.find('l').attributes['stroke-width'], '6');
+  assert.equal(document.find('g').attributes['text-anchor'], 'middle');
+  assert.equal(document.find('u').attributes['font-size'], 'inherit');
+  assert.equal(document.find('inner').attributes['font-size'], '2em');
+  const output = codec.encode(document);
+  assert.equal(codec.encode(codec.decode(output).document), output);
+  assert.equal(codec.encode(document.copy()), output);
+  assert.throws(() => document.find('t').set('font-size', '10'), /unknown attribute: font-size/);
+  assert.throws(() => document.find('g').set('text-anchor', 'end'), /unknown attribute: text-anchor/);
+});
+
+test('text without an absolute font size keeps browser-relative sizing after transform flattening', () => {
+  const document = codec.decode(wrap('<g id="g" transform="scale(2)" font-size="3em"><text id="t">default</text><text id="u" font-size="150%">relative</text></g>')).document;
+  assert.equal(document.find('t').attributes['font-size'], '2em');
+  assert.equal(document.find('u').attributes['font-size'], '3em');
+  const output = codec.encode(document);
+  assert.equal(codec.encode(codec.decode(output).document), output);
+});
+
+test('invalid presentation and overflow are rejected before publishing an imported document', () => {
+  for (const source of [
+    '<text font-size="-1"/>', '<text font-size="1 em"/>', '<text font-size="NaN"/>',
+    '<text font-size="16pt"/>', '<g text-anchor="center"><text/></g>',
+    '<g font-size="1e308"><text font-size="2em"/></g>',
+    '<text font-size="1e308" transform="scale(2)"/>',
+    '<line stroke="red" stroke-width="1e308" transform="scale(2)"/>',
+  ]) assert.throws(() => codec.decode(wrap(source)), /invalid SVG:/, source);
 });

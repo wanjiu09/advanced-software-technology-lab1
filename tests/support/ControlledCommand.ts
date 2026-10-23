@@ -5,6 +5,8 @@ export class ControlledCommand implements Command {
   private readonly events: string[] = [];
   public constructor(private readonly name: string) {}
   public get summary(): string { return this.name; }
+  public get undoSummary(): string { return `undone: ${this.name}`; }
+  public get redoSummary(): string { return `redone: ${this.name}`; }
   public get trace(): readonly string[] { return [...this.events]; }
   public failNext(operation: 'execute' | 'undo' | 'redo'): void { this.failures.add(operation); }
   public execute(): void { this.act('execute'); }

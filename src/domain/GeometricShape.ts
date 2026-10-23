@@ -15,6 +15,9 @@ export abstract class GeometricShape extends Shape {
     }
   }
 
+  public override get points(): readonly (readonly [number, number])[] { return this.geometry.points; }
+  public override get geometryNames(): readonly string[] { return Object.freeze(Object.keys(this.geometry.attributes)); }
+
   public override validateMove(dx: number, dy: number): void {
     this.geometry.validateMove(dx, dy);
   }

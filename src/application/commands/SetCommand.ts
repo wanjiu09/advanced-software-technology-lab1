@@ -8,7 +8,9 @@ export class SetCommand extends EditCommand {
 
   protected override apply(document: SvgDocument): void {
     const shape = document.find(this.id);
+    const previous = this.attribute === 'text' ? shape.text : shape.attributes[this.attribute];
     shape.set(this.attribute, this.value);
     this.result = `${shape.tagName}#${shape.id} updated: ${this.attribute}=${JSON.stringify(this.value)}`;
+    this.reversedResult = `${shape.tagName}#${shape.id} updated: ${this.attribute}=${previous === undefined ? '(default)' : JSON.stringify(previous)}`;
   }
 }

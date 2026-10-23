@@ -5,5 +5,7 @@ export interface ShapeView {
   readonly parent: string | undefined;
   readonly attributes: Readonly<Record<string, string>>;
   readonly text: string | undefined;
+  readonly points: readonly (readonly [number, number])[];
+  readonly geometryNames: readonly string[];
   readonly children: readonly ShapeView[];
 }

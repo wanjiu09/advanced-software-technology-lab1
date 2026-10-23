@@ -38,7 +38,7 @@ test('two-node diagram builds top-down with all six types and inline tree geomet
 test('literal in, empty text, quoted colors and subtree queries are parsed correctly', async () => {
   const output = await replay('init\ncreate g g\ncreate text t 1 2 "in" in g\ncreate text empty 3 4 ""\ncreate rect r 0 0 1 2 "in"\ntree g\nshow empty\nshow r');
   assert.equal(output.includes('error:'), false);
-  assert.match(output, /text#t x=1 y=2 "in"/);
+  assert.match(output, /text#t \(1,2\) "in"/);
   assert.match(output, /text=""/);
   assert.match(output, /fill=in/);
 });

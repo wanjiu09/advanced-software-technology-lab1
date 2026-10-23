@@ -40,7 +40,7 @@ test('actual CLI failed read/write preserve redo and default destination', async
       'move r 5 6', 'undo', `read ${JSON.stringify(bad)}`, 'redo', 'undo',
       `save ${JSON.stringify(dir)}`, 'redo', 'save', 'show r']);
     assert.match(result, /error: invalid SVG:/); assert.match(result, /error: cannot write file:/);
-    assert.equal(result.match(/redone: rect#r moved by/g)?.length, 2);
+    assert.equal(result.match(/rect#r moved to \(6,8\)/g)?.length, 3, 'initial move and two successful redos');
     const restored = new SvgCodec().decode(await readFile(output, 'utf8')).document;
     assert.equal(restored.find('r').attributes.x, '6'); assert.equal(restored.find('r').attributes.y, '8');
     assert.equal(new SvgCodec().decode(await readFile(input, 'utf8')).document.find('r').attributes.x, '1');
@@ -56,7 +56,7 @@ test('file CLI validates arity, requires a document/path, and init resets rememb
     assert.match(result, /error: no document/); assert.match(result, /error: usage: read/);
     assert.match(result, /error: usage: save/);
     assert.equal(result.match(/error: no file path/g)?.length, 2);
-    assert.match(result, /redone: g#g moved by/);
+    assert.match(result, /g#g moved by/);
     assert.equal(result.includes('not implemented'), false);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });

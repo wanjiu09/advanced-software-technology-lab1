@@ -10,18 +10,23 @@ export class ShapePresenter {
   }
 
   public show(view: ShapeView): readonly string[] {
+    const geometry = view.geometryNames.map((name) => `${name}=${view.attributes[name]}`).join(' ');
     return [
       `${view.tagName}#${view.id}  parent=${view.parent ?? 'none'}`,
-      ...Object.entries(view.attributes).filter(([name]) => name !== 'id').map(([name, value]) => `  ${name}=${value}`),
+      ...(geometry ? [`  ${geometry}`] : []),
+      ...Object.entries(view.attributes).filter(([name]) => name !== 'id' && !view.geometryNames.includes(name))
+        .map(([name, value]) => `  ${name}=${value}`),
       ...(view.text === undefined ? [] : [`  text=${JSON.stringify(view.text)}`]),
     ];
   }
 
   private summary(view: ShapeView): string {
+    const paired = view.text !== undefined || view.points.length > 1;
     const properties = Object.entries(view.attributes)
-      .filter(([name]) => name !== 'id')
+      .filter(([name]) => name !== 'id' && !(paired && view.geometryNames.includes(name)))
       .map(([name, value]) => `${name === 'width' ? 'w' : name === 'height' ? 'h' : name}=${value}`);
-    if (view.text !== undefined) properties.push(JSON.stringify(view.text));
+    if (paired) properties.unshift(view.points.map(([x, y]) => `(${x},${y})`).join(' -> '));
+    if (view.text !== undefined) properties.splice(1, 0, JSON.stringify(view.text));
     return [`${view.tagName}#${view.id}`, ...properties].join(' ');
   }
 

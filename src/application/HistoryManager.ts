@@ -21,7 +21,7 @@ export class HistoryManager {
     command.undo();
     this.undoStack.pop();
     this.redoStack.push(command);
-    return `undone: ${command.summary}`;
+    return command.undoSummary;
   }
 
   public redo(): string {
@@ -31,7 +31,7 @@ export class HistoryManager {
     command.redo();
     this.redoStack.pop();
     this.undoStack.push(command);
-    return `redone: ${command.summary}`;
+    return command.redoSummary;
   }
 
   public barrier(): void {

@@ -31,6 +31,12 @@ export class ShapeFactory {
     return this.definition(type).parameters(values);
   }
 
+  public createSvg(type: string, id: string, attributes: Readonly<Record<string, string>>): Shape {
+    const shape = this.create(type, id);
+    for (const [name, value] of Object.entries(attributes)) shape.importAttribute(name, value);
+    return shape;
+  }
+
   private definition(type: string): ShapeDefinition {
     const definition = this.creators.get(type);
     if (definition === undefined) {

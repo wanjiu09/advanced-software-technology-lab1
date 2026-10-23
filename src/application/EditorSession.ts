@@ -125,7 +125,8 @@ export class EditorSession {
     return Object.freeze({
       id: undefined, tagName: 'svg', parent: undefined,
       attributes: Object.freeze({ width: String(document.width), height: String(document.height) }),
-      text: undefined, children: Object.freeze(document.children.map((child) => this.view(child))),
+      text: undefined, points: Object.freeze([]), geometryNames: Object.freeze([]),
+      children: Object.freeze(document.children.map((child) => this.view(child))),
     });
   }
 
@@ -177,6 +178,7 @@ export class EditorSession {
       id: shape.id, tagName: shape.tagName,
       parent: parent === null ? undefined : parent.id === undefined ? 'svg' : `${parent.tagName}#${parent.id}`,
       attributes: shape.attributes, text: shape.text,
+      points: shape.points, geometryNames: shape.geometryNames,
       children: Object.freeze(shape.children.map((child) => this.view(child))),
     });
   }

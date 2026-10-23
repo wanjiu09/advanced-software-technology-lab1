@@ -59,6 +59,12 @@ export class Geometry {
     return this.values.has(name);
   }
 
+  public get points(): readonly (readonly [number, number])[] {
+    const vertical = [...this.vertical];
+    return Object.freeze([...this.horizontal].map((name, index) =>
+      Object.freeze([this.get(name), this.get(vertical[index]!)] as const)));
+  }
+
   public get(name: string): number {
     const value = this.values.get(name);
     if (value === undefined) {

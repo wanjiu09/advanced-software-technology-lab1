@@ -6,10 +6,14 @@ import type { Command } from './Command.js';
 /** Transactional Command base: snapshots are owned by the command, not the CLI. */
 export abstract class EditCommand implements Command {
   protected result = '';
+  protected reversedResult = '';
 
   public get summary(): string {
     return this.result;
   }
+
+  public get undoSummary(): string { return this.reversedResult; }
+  public get redoSummary(): string { return this.result; }
 
   private before: DocumentMemento | undefined;
   private after: DocumentMemento | undefined;

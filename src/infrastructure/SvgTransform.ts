@@ -1,7 +1,8 @@
 import { Geometry } from '../domain/Geometry.js';
 import type { Shape } from '../domain/Shape.js';
+import type { SvgPresentation } from './SvgPresentation.js';
 
-/** Positive uniform affine subset. Unsupported visual changes are rejected explicitly. */
+/** Positive uniform affine subset, including text and inherited stroke metrics. */
 export class SvgTransform {
   public constructor(private readonly scale = 1, private readonly x = 0, private readonly y = 0) {
     Geometry.requirePositive(scale, 'transform scale');
@@ -36,13 +37,16 @@ export class SvgTransform {
     return new SvgTransform(this.scale * local.scale, this.x + this.scale * local.x, this.y + this.scale * local.y);
   }
 
-  public apply(shape: Shape, stroke: string): void {
+  public apply(shape: Shape, presentation: SvgPresentation): void {
     if (shape.isContainer) return;
     if (this.scale !== 1) {
-      if (shape.text !== undefined || stroke !== 'none') {
-        throw new Error('scaled text or strokes cannot be imported losslessly');
-      }
       shape.scale(this.scale);
+      if (shape.text !== undefined) {
+        shape.importAttribute('font-size', presentation.scaledFontSize(this.scale, shape.attributes['font-size']));
+      }
+      if (presentation.stroke !== 'none' || shape.attributes['stroke-width'] !== undefined) {
+        shape.set('stroke-width', String(presentation.strokeWidth * this.scale));
+      }
     }
     shape.move(this.x, this.y);
   }

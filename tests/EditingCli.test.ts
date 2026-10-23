@@ -36,7 +36,7 @@ test('CLI syntax failures, bad numbers, quotes and queries do not discard redo',
   assert.match(output, /error: unknown attribute: unknown/);
   assert.match(output, /error: no such shape: absent/);
   assert.match(output, /error: unterminated double quote/);
-  assert.match(output, /redone: rect#r moved by/);
+  assert.match(output, /rect#r moved to \(11,22\)/);
   assert.match(output, /x=11/); assert.match(output, /y=22/);
   assert.equal(output.includes('nothing to redo'), false);
 });
@@ -48,7 +48,7 @@ test('CLI enforces IO barriers and creates a fresh history after a successful ed
   assert.match(output, /error: no document\. use 'init' or 'read' first/);
   assert.equal(output.match(/error: undo not allowed after io command/g)?.length, 6);
   assert.match(output, /error: nothing to undo/);
-  assert.match(output, /redone: rect#r updated: fill="blue"/);
+  assert.match(output, /rect#r updated: fill="blue"/);
   assert.match(output, /fill=blue/);
 });
 
@@ -61,6 +61,6 @@ test('all six types accept reversible styles, and empty text can be restored', (
   assert.equal(output.includes('error:'), false);
   assert.match(output, /text=""/); assert.match(output, /text="原文"/);
   assert.match(output, /circle#c cx=1 cy=2 r=3 fill=red/);
-  assert.match(output, /line#l x1=1 y1=2 x2=3 y2=4 stroke=black/);
+  assert.match(output, /line#l \(1,2\) -> \(3,4\) stroke=black/);
   assert.match(output, /g#g stroke-width=2/);
 });

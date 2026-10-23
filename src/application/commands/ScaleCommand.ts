@@ -10,5 +10,6 @@ export class ScaleCommand extends EditCommand {
     const shape = document.find(this.id);
     shape.scale(this.factor);
     this.result = `${shape.tagName}#${shape.id} scaled by ${this.factor}`;
+    this.reversedResult = `${shape.tagName}#${shape.id} scale restored`;
   }
 }

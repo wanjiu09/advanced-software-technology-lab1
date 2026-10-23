@@ -7,7 +7,9 @@ export class UngroupCommand extends EditCommand {
   public constructor(session: EditorSession, private readonly id: string) { super(session); }
   protected override apply(document: SvgDocument): void {
     const shape = document.find(this.id);
+    const count = shape.children.length;
     new HierarchyEditor(document).ungroup(this.id);
     this.result = `${shape.tagName}#${shape.id} ungrouped`;
+    this.reversedResult = `${shape.tagName}#${shape.id} restored with ${count} children`;
   }
 }

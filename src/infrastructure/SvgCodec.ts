@@ -5,6 +5,7 @@ import type { Shape } from '../domain/Shape.js';
 import { ShapeFactory } from '../domain/ShapeFactory.js';
 import { SvgDocument } from '../domain/SvgDocument.js';
 import { SvgTransform } from './SvgTransform.js';
+import { SvgPresentation } from './SvgPresentation.js';
 
 export class SvgCodec {
   private readonly namespace = 'http://www.w3.org/2000/svg';
@@ -56,7 +57,7 @@ export class SvgCodec {
       for (const element of this.elements(root)) reserve(element);
       const warnings: string[] = [];
       const counters = new Map<string, number>();
-      const build = (element: Element, parentTransform: SvgTransform, inheritedStroke: string): Shape => {
+      const build = (element: Element, parentTransform: SvgTransform, inherited: SvgPresentation): Shape => {
         this.checkNamespace(element);
         if (element.namespaceURI !== root.namespaceURI) throw new Error('mixed element namespaces are unsupported');
         const attributes = this.attributes(element);
@@ -72,7 +73,7 @@ export class SvgCodec {
         if (Object.hasOwn(attributes, 'text')) throw new Error('text content must be a child text node');
         const transform = parentTransform.compose(SvgTransform.parse(attributes.transform ?? ''));
         delete attributes.transform;
-        const shape = this.factory.create(type, id, attributes);
+        const shape = this.factory.createSvg(type, id, attributes);
         const children = this.elements(element);
         if (shape.text !== undefined) {
           if (children.length > 0) throw new Error('nested text markup is unsupported');
@@ -84,10 +85,9 @@ export class SvgCodec {
             if ((node.nodeType === 3 || node.nodeType === 4) && node.nodeValue?.trim()) throw new Error('unexpected character content');
           }
         }
-        const ownStroke = shape.attributes.stroke;
-        const stroke = ownStroke === undefined || ownStroke === 'inherit' ? inheritedStroke : ownStroke;
-        for (const child of children) shape.appendChild(build(child, transform, stroke));
-        transform.apply(shape, stroke);
+        const presentation = inherited.inherit(shape.attributes);
+        for (const child of children) shape.appendChild(build(child, transform, presentation));
+        transform.apply(shape, presentation);
         return shape;
       };
       // Validate root character content and unsupported instructions as well.
@@ -95,7 +95,7 @@ export class SvgCodec {
         const node = root.childNodes.item(i)!;
         if ((node.nodeType === 3 || node.nodeType === 4) && node.nodeValue?.trim()) throw new Error('unexpected root text');
       }
-      for (const element of this.elements(root)) document.add(build(element, new SvgTransform(), 'none'));
+      for (const element of this.elements(root)) document.add(build(element, new SvgTransform(), new SvgPresentation()));
       return Object.freeze({ document, warnings: Object.freeze(warnings) });
     } catch (error: unknown) {
       throw new Error(`invalid SVG: ${error instanceof Error ? error.message : 'invalid XML'}`);

@@ -15,5 +15,6 @@ export class GroupCommand extends EditCommand {
     const group = this.factory.create('g', this.id);
     new HierarchyEditor(document).group(group, this.ids);
     this.result = `g#${this.id} created with ${group.children.length} children`;
+    this.reversedResult = `g#${this.id} ungrouped`;
   }
 }

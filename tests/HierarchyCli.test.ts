@@ -22,7 +22,7 @@ test('assignment-style grouping transcript supports editing and full history res
   assert.match(output, /├── circle#c1 cx=100 cy=100 r=20 fill=red/);
   assert.match(output, /└── rect#box x=200 y=80 w=60 h=60 fill=#3366ff/);
   assert.match(output, /error: cannot group a container into its own descendant: markers/);
-  assert.match(output, /undone: rect#box deleted/);
+  assert.match(output, /rect#box restored into g#markers/);
   assert.match(output, /error: cannot ungroup top-level container: markers/);
 });
 
@@ -38,7 +38,7 @@ test('CLI connects nested ungroup, reparenting and sibling paint order to undo/r
   assert.match(output, /g#right moved to back/);
   assert.match(output, /rect#a  parent=g#right/);
   assert.match(output, /rect#a  parent=g#left/);
-  assert.match(output, /text#b x=5 y=6 "开始"/);
+  assert.match(output, /text#b \(5,6\) "开始"/);
 });
 
 test('structural syntax and cycle errors preserve a pending redo branch', () => {
@@ -53,7 +53,7 @@ test('structural syntax and cycle errors preserve a pending redo branch', () => 
   assert.match(output, /error: cannot add a shape into its own descendant: g/);
   assert.match(output, /error: duplicate shape id: r/);
   assert.match(output, /error: id already exists: g/);
-  assert.match(output, /redone: rect#r moved by/);
+  assert.match(output, /rect#r moved to \(1,2\)/);
   assert.match(output, /x=1/); assert.match(output, /y=2/);
   assert.equal(output.includes('nothing to redo'), false);
 });

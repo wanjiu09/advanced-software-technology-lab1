@@ -22,5 +22,6 @@ export class CreateCommand extends EditCommand {
     const shape = this.factory.create(this.type, this.id, this.attributes);
     document.add(shape, this.containerId);
     this.result = `${shape.tagName}#${shape.id} created${this.containerId === undefined ? '' : ` in g#${this.containerId}`}`;
+    this.reversedResult = `${shape.tagName}#${shape.id} deleted`;
   }
 }
