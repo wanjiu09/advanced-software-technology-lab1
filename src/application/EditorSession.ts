@@ -1,3 +1,4 @@
+import type { SvgStorage } from './ports/SvgStorage.js';
 import { BackCommand } from './commands/BackCommand.js';
 import { FrontCommand } from './commands/FrontCommand.js';
 import { AddToCommand } from './commands/AddToCommand.js';
@@ -19,8 +20,10 @@ import type { ShapeView } from './ShapeView.js';
 export class EditorSession {
   private readonly history = new HistoryManager();
   private document: SvgDocument | undefined;
+  private path: string | undefined;
+  private ioPending = false;
 
-  public constructor(private readonly factory = new ShapeFactory()) {}
+  public constructor(private readonly factory = new ShapeFactory(), private readonly storage?: SvgStorage) {}
 
   public requireDocument(): SvgDocument {
     if (this.document === undefined) throw new Error("no document. use 'init' or 'read' first");
@@ -28,17 +31,20 @@ export class EditorSession {
   }
 
   public initialize(width?: string, height?: string): void {
+    this.requireIdle();
     const document = new SvgDocument(
       width === undefined ? 800 : Geometry.parseNumber(width, 'canvas width'),
       height === undefined ? 600 : Geometry.parseNumber(height, 'canvas height'),
     );
     this.document = document;
+    this.path = undefined;
     this.history.barrier();
   }
 
   public canvas(width?: string, height?: string): Readonly<{ width: number; height: number }> {
     const document = this.requireDocument();
     if (width !== undefined && height !== undefined) {
+      this.requireIdle();
       document.resize(Geometry.parseNumber(width, 'canvas width'), Geometry.parseNumber(height, 'canvas height'));
       this.history.barrier();
     } else if (width !== undefined || height !== undefined) {
@@ -58,6 +64,7 @@ export class EditorSession {
   }
 
   public executeEdit(command: Command): string {
+    this.requireIdle();
     this.requireDocument();
     return this.history.execute(command);
   }
@@ -101,11 +108,13 @@ export class EditorSession {
   }
 
   public undo(): string {
+    this.requireIdle();
     this.requireDocument();
     return this.history.undo();
   }
 
   public redo(): string {
+    this.requireIdle();
     this.requireDocument();
     return this.history.redo();
   }
@@ -122,6 +131,44 @@ export class EditorSession {
 
   public show(id: string): ShapeView {
     return this.view(this.requireDocument().find(id));
+  }
+
+  public async read(path: string): Promise<readonly string[]> {
+    this.requireIdle();
+    const storage = this.requireStorage();
+    this.ioPending = true;
+    try {
+      const result = await storage.read(path);
+      this.document = result.document;
+      this.path = result.path;
+      this.history.barrier();
+      return [...result.warnings, `read ${path} (${result.document.size} elements)`];
+    } finally { this.ioPending = false; }
+  }
+
+  public async save(path?: string): Promise<readonly string[]> {
+    this.requireIdle();
+    const document = this.requireDocument();
+    const target = path ?? this.path;
+    if (target === undefined) throw new Error('no file path. use save <file.svg>');
+    const storage = this.requireStorage();
+    const snapshot = document.copy();
+    this.ioPending = true;
+    try {
+      const savedPath = await storage.write(target, snapshot);
+      this.path = savedPath;
+      this.history.barrier();
+      return [`saved to ${target} (${snapshot.size} elements)`];
+    } finally { this.ioPending = false; }
+  }
+
+  private requireStorage(): SvgStorage {
+    if (this.storage === undefined) throw new Error('SVG storage is not configured');
+    return this.storage;
+  }
+
+  private requireIdle(): void {
+    if (this.ioPending) throw new Error('io operation in progress');
   }
 
   private view(shape: Shape): ShapeView {

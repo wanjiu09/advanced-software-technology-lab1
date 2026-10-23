@@ -11,7 +11,7 @@ export class HelpCommand extends CliCommand {
       throw new Error('usage: help');
     }
     return [
-      'Commands (available: init, canvas, create, move, scale, set, delete, group, ungroup, addto, front, back, undo, redo, tree, show, help):',
+      'Commands (available: init, read, save, canvas, create, move, scale, set, delete, group, ungroup, addto, front, back, undo, redo, tree, show, help):',
       ...this.registry.helpLines(),
       '双引号包裹带空格参数；以 # 开头的整行是注释；EOF / Ctrl+D 结束会话。',
     ];

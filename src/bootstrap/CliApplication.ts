@@ -1,3 +1,8 @@
+import { ShapeFactory } from '../domain/ShapeFactory.js';
+import { SvgCodec } from '../infrastructure/SvgCodec.js';
+import { SvgFileStorage } from '../infrastructure/SvgFileStorage.js';
+import { ReadCliCommand } from '../cli/ReadCliCommand.js';
+import { SaveCliCommand } from '../cli/SaveCliCommand.js';
 import { BackCliCommand } from '../cli/BackCliCommand.js';
 import { FrontCliCommand } from '../cli/FrontCliCommand.js';
 import { AddToCliCommand } from '../cli/AddToCliCommand.js';
@@ -19,7 +24,6 @@ import { CommandInterpreter } from '../cli/CommandInterpreter.js';
 import { CommandRegistry } from '../cli/CommandRegistry.js';
 import { CommandTokenizer } from '../cli/CommandTokenizer.js';
 import { HelpCommand } from '../cli/HelpCommand.js';
-import { PendingCommand } from '../cli/PendingCommand.js';
 import { Repl } from '../cli/Repl.js';
 
 /** Composition root: CLI wiring and command definitions, without editing rules. */
@@ -30,7 +34,8 @@ export class CliApplication {
     terminal: boolean = false,
   ): Repl {
     const registry = new CommandRegistry();
-    const session = new EditorSession();
+    const factory = new ShapeFactory();
+    const session = new EditorSession(factory, new SvgFileStorage(new SvgCodec(factory)));
     registry.register(new InitCliCommand(session));
     registry.register(new CanvasCliCommand(session));
     registry.register(new CreateCliCommand(session));
@@ -47,7 +52,8 @@ export class CliApplication {
     registry.register(new AddToCliCommand(session));
     registry.register(new FrontCliCommand(session));
     registry.register(new BackCliCommand(session));
-    this.registerPendingCommands(registry);
+    registry.register(new ReadCliCommand(session));
+    registry.register(new SaveCliCommand(session));
     registry.register(new HelpCommand(registry));
     return new Repl(
       new CommandInterpreter(new CommandTokenizer(), registry),
@@ -57,8 +63,4 @@ export class CliApplication {
     );
   }
 
-  private registerPendingCommands(registry: CommandRegistry): void {
-    registry.register(new PendingCommand('read', ['read <file.svg>'], '读入 SVG，缺失 id 时补全并警告。'));
-    registry.register(new PendingCommand('save', ['save [file.svg]'], '保存 SVG；省略路径时使用当前文件路径。'));
-  }
 }
