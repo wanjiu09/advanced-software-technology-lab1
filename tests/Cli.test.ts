@@ -32,7 +32,7 @@ test('help includes all assignment commands and creation signatures, without adv
 
 test('multiple failed commands are followed by a successful help, including a final line without newline', () => {
   const result = spawnSync(process.execPath, [entry], {
-    input: 'create text title 20 40 "unfinished\nwarp\nhelp extra\ninit\nhelp',
+    input: 'create text title 20 40 "unfinished\nwarp\nhelp extra\nmove r1 1 1\nhelp',
     encoding: 'utf8',
     timeout: 5000,
   });
@@ -41,9 +41,9 @@ test('multiple failed commands are followed by a successful help, including a fi
   assert.match(result.stdout, /error: unterminated double quote/);
   assert.match(result.stdout, /error: unknown command: warp/);
   assert.match(result.stdout, /error: usage: help/);
-  assert.match(result.stdout, /error: command not implemented in stage 1: init/);
+  assert.match(result.stdout, /error: command not implemented yet: move/);
   assert.equal(result.stdout.match(/error:/g)?.length, 4);
-  assert.match(result.stdout, /Commands \(stage 1: only help is available\):/);
+  assert.match(result.stdout, /Commands \(available: init, canvas, create, tree, show, help\):/);
   assert.equal(result.stdout.includes('created'), false);
 });
 

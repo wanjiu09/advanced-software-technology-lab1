@@ -1,4 +1,5 @@
 import { Geometry } from './Geometry.js';
+import { DocumentMemento } from './DocumentMemento.js';
 import type { Shape } from './Shape.js';
 import { TreeNode } from './TreeNode.js';
 
@@ -61,6 +62,22 @@ export class SvgDocument extends TreeNode {
       throw new Error(`no such shape: ${id}`);
     }
     return shape;
+  }
+
+  public createMemento(): DocumentMemento {
+    return new DocumentMemento(this);
+  }
+
+  public restore(memento: DocumentMemento): void {
+    const restored = memento.materialize();
+    for (const child of this.children) {
+      this.removeChild(child);
+    }
+    this.resize(restored.width, restored.height);
+    for (const child of restored.children) {
+      restored.removeChild(child);
+      this.appendChild(child);
+    }
   }
 
   public copy(): SvgDocument {
