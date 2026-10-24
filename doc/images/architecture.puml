@@ -1,0 +1,31 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 13
+skinparam ArrowColor #64748B
+skinparam ArrowThickness 1.4
+skinparam componentBorderColor #94A3B8
+skinparam componentBackgroundColor #F8FAFC
+skinparam nodesep 65
+skinparam ranksep 65
+skinparam padding 18
+skinparam roundcorner 10
+top to bottom direction
+
+component "<b>src/bootstrap</b>\n\nCliApplication\nObject composition" as Bootstrap #EFF6FF
+component "<b>src/cli</b>\n\nRepl / CommandRegistry\nCLI adapters / ShapePresenter" as Cli
+component "<b>src/infrastructure</b>\n\nSvgFileStorage / SvgCodec\nSvgTransform / SvgPresentation" as Infrastructure
+component "<b>src/application</b>\n\nEditorSession / HistoryManager\nCommands / SvgStorage port" as Application #EFF6FF
+component "<b>src/domain</b>\n\nSvgDocument / Shapes\nShapeFactory / HierarchyEditor\nDocumentMemento" as Domain #EFF6FF
+
+Bootstrap --> Cli
+Bootstrap --> Infrastructure
+Bootstrap -down-> Application
+Bootstrap -right-> Domain
+Cli --> Application
+Infrastructure ..> Application
+Application -down-> Domain
+Infrastructure --> Domain
+@enduml

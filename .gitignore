@@ -7,3 +7,17 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# Local previews, browser artifacts and CLI sample output.
+/output/
+/.playwright-cli/
+/*.svg
+
+# Only the final report and its supporting figures belong in doc/.
+/doc/*
+!/doc/README.md
+!/doc/images/
+/doc/images/*
+!/doc/images/architecture.puml
+!/doc/images/architecture.svg
+!/doc/images/svg-comparison.png
